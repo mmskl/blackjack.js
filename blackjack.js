@@ -1,11 +1,7 @@
-var options = {};
-
-function Hand(name, sid, tokens) {
-    this.playerName = name;
-    this.sid = sid;
-    this.tokens = tokens;
+function Hand() {
     this.cards = [];
 };
+
 
 Hand.prototype.total = function () {
     console.log('getting total');
@@ -33,93 +29,52 @@ Hand.prototype.total = function () {
     return score;
 };
 
-Hand.prototype.isBusted = function () {
-    return this.total() > 21;
-};
 
 Hand.prototype.dealCard = function (card) {
+    
     this.cards.push(card);
+    
 };
 
 
-function Table(owner, playersLimit, tokensPerCard, decksAmount) {
+function Table(dealer, decksAmount) {
     this.deck = new Deck(decksAmount);
+    this.dealer = dealer;
     this.players = [];
-    this.owner = owner;
-    this.playersLimit = playersLimit;
-    this.tokensPerCard = tokensPerCard;
 
 };
 
-Table.prototype.checkWinner = function() {
-    var winners = [];
-    var max = 0, cards = 0;
+Table.prototype.isBust = function(name) {
+	return this.players[name].total() > 21;
+}
 
-    for (var i = 0; i < this.players.length ; i++) {
-        if(this.players[i].total() > 21) continue;
-
-        if(this.players[i].total() > max) {
-            winners = [];
-            winners.push(this.players[i]);
-            max = this.players[i].total();
-            cards = this.players[i].cards.length;
-        }
-        else if (this.players[i].total() == max) {
-            if(this.players[i].cards.length < cards) {
-                winners = [];
-                winners.push(this.players[i]);
-            } else if (this.players[i].cards.length == cards) {
-                winners.push(this.players[i]);
-            }
-
-
-
-
-        }
-        this.players[i].cards = [];
-
-    }
-
-
-    console.log('winners:');
-    console.log(winners);
-
-    return winners;
+Table.prototype.getParticularCard = function(name, which) {
+	return this.players[name].cards[which];
 }
 
 
-Table.prototype.FindByTable = function(user) {
-    for(var i =0; i < this.players.length; i++) {
-        if(this.players[i].playerName == user) return true;
+Table.prototype.startGame = function(twoCardsToDealer) {
+
+    if(twoCardsToDealer != false)  {
+        this.players[this.dealer].dealCard(this.deck.getCard());
+        this.players[this.dealer].dealCard(this.deck.getCard());
     }
-}
+    
 
 
-Table.prototype.amount = function(room) {
-    var am = 0;
-    for(var i=0; i < this.players.length; i++) {
-        if(this.players[i].room == room) {
-            am++
-        }
-    }
-    return am;
 
 };
 
+Table.prototype.dealCard = function(name) {
+
+    this.players[name].dealCard(this.deck.getCard());
 
 
-Table.prototype.nextRound = function() {
+};
 
-console.log('cardFromDeck');
-console.log(this.deck.getCard());
+Table.prototype.getScore = function(name) {
 
-
-    for(var i=0; i < this.players.length; i++) {
-
-            this.players[i].dealCard(this.deck.getCard());
-
-
-    }
+    this.players[name].total();
 
 
 };
@@ -127,44 +82,13 @@ console.log(this.deck.getCard());
 
 
 
-Table.prototype.buyCard = function(name) {
+Table.prototype.addPlayer = function(user, tokens){
 
+        var player = new Hand();
+        this.players[user] = player;
 
-    for(var i=0; i < this.players.length; i++) {
-
-
-        if( this.players[i].playerName == name) {
-
-            var card = this.deck.getCard();
-            this.players[i].dealCard(card);
-        }
-    }
-    return card;
-
-}
-
-Table.prototype.payForCard = function() {
-
-}
-
-Table.prototype.addPlayer = function(user, sid, tokens){
-
-
-    if (this.players.length <= this.playersLimit ) {
-
-        var player = new Hand(user, sid, tokens);
-        this.players.push(player);
-    }
 };
 
-Table.prototype.userGetsCard = function(user, room) {
-    for(var i=0; i < this.players.length; i++) {
-        if(this.players[i].room == room && this.players[i].playerName == user) {
-            this.players[i].dealCard(this.deck.getCard());
-        }
-
-    }
-};
 
 exports.Table = Table;
 
@@ -174,7 +98,6 @@ function Card(displayValue, suit, value) {
     this.suit = suit;
     this.value = value;
 }
-
 
 
 
@@ -198,7 +121,7 @@ function deckGenerator(howManyDecksOfCards) {
     }
     console.log('generuje');
     console.log(howManyDecksOfCards);
-    return deck;
+    return shuffle(deck);
 }
 
 
@@ -226,6 +149,3 @@ shuffle = function (o) {
     for (var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
     return o;
 };
-
-
-
